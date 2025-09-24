@@ -1,4 +1,8 @@
-let eX, eY, eS, eSpeed;
+  let eX, eY, eS, eSpeed;
+  let carX = 400;
+  let carY = 300;
+  let carSize = 40;
+  let speed = 5;
 
 function setup() {
   createCanvas(300, 600);
@@ -10,7 +14,27 @@ function setup() {
 }
 
 function draw() {
-  background(bgColor);
+// 1. Update game state
+
+// 2. Check for collisions
+
+// 3. Handle input
+
+    // Continuous movement while keys are held
+  if (keyIsDown(LEFT_ARROW)) {
+    playerX -= speed;
+  }
+  if (keyIsDown(RIGHT_ARROW)) {
+    playerX += speed;
+  }
+  if (keyIsDown(UP_ARROW)) {
+    playerY -= speed;
+  }
+  if (keyIsDown(DOWN_ARROW)) {
+    playerY += speed;
+  }
+// 4. Draw everything
+background(bgColor);
   stroke('black');
   strokeWeight(10);
   noFill();
@@ -45,5 +69,8 @@ function resetGame() {
 function keyPressed() {
   if (key === ' ') { // Spacebar
     resetGame();
+// 5. Display UI (score, health, etc.)
+
+  
   }
 }
