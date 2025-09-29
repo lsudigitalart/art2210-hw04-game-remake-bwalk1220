@@ -1,10 +1,12 @@
 let eX, eY, eS, eSpeed;
 let playerX, playerY, playerSize;
-let speed = 5;
+let speed = 8;
 let bgColor;
 let gameOver = false;
-let stars = []; // Array to hold star positions
-let starOffset = 0; // Track star movement
+let stars = [];
+let starOffset = 0;
+let playerTrail = []; // Array to store player trail positions
+let enemyTrail = [];  // Array to store enemy trail positions
 
 function setup() {
   createCanvas(250, 600);
@@ -18,9 +20,13 @@ function setup() {
   eX = random(width);
   eY = -eS/2;
   eSpeed = 5;
-  bgColor = color(10, 10, 30); // Dark space blue
+  bgColor = color(10, 10, 30);
   gameOver = false;
   starOffset = 0;
+  
+  // Initialize trails
+  playerTrail = [];
+  enemyTrail = [];
   
   // Create stars
   createStars();
@@ -46,8 +52,9 @@ function draw() {
     if (eY > height) {
       eY = -eS/2;
       eX = random(width);
+      enemyTrail = []; // Clear enemy trail when it resets
     } 
-    eSpeed = eSpeed + 0.01;
+    eSpeed = eSpeed + 0.005;
     
     // Update star animation based on enemy speed
     starOffset += eSpeed * 0.5;
@@ -73,12 +80,20 @@ function draw() {
     playerX = constrain(playerX, playerSize/2, width - playerSize/2);
     playerY = constrain(playerY, playerSize/2, height - playerSize/2);
 
+    // Update trails
+    updateTrail(playerTrail, playerX, playerY + playerSize/2);
+    updateTrail(enemyTrail, eX, eY - eS/2); 
+
     // Check for collisions
     if (dist(playerX, playerY, eX, eY) < (playerSize + eS) / 2) {
-      bgColor = color(100, 20, 20); // Dark red space
+      bgColor = color(100, 20, 20);
       gameOver = true;
     }
   }
+
+  // Draw trails first (behind spaceships)
+  drawTrail(playerTrail, color(100, 150, 255, 150)); // Blue trail
+  drawTrail(enemyTrail, color(255, 100, 100, 150));  // Red trail
 
   // Draw player (blue spaceship)
   drawSpaceship(playerX, playerY, playerSize, color(100, 150, 255));
@@ -89,7 +104,7 @@ function draw() {
   // Display UI
   fill(200, 200, 255);
   textSize(16);
-  text('Speed: ' + eSpeed.toFixed(1), 10, 30);
+  text('Score: ' + eSpeed.toFixed(1), 10, 30);
   
   if (gameOver) {
     // Draw game over text
@@ -104,8 +119,45 @@ function draw() {
     noStroke();
     textAlign(LEFT, BASELINE);
   } else {
-    text('Use arrow keys to move', 10, height - 20);
-    text('Press SPACE to reset', 10, height - 40);
+    text('Use arrow keys to move', 10, 50);
+    text('Press SPACE to reset', 10, 70);
+  }
+}
+
+function updateTrail(trail, x, y) {
+  // Add current position to trail
+  trail.push({x: x, y: y, age: 0});
+  
+  // Update existing trail particles - move them down
+  for (let i = 0; i < trail.length; i++) {
+    trail[i].y += 3; // Move trail particles downward
+    trail[i].age += 1; // Increase age for fading
+  }
+  
+  // Remove old trail points that are too old or off screen
+  for (let i = trail.length - 1; i >= 0; i--) {
+    if (trail[i].age > 40 || trail[i].y > height + 20) {
+      trail.splice(i, 1);
+    }
+  }
+}
+
+function drawTrail(trail, trailColor) {
+  for (let i = 0; i < trail.length; i++) {
+    let particle = trail[i];
+    let alpha = map(particle.age, 0, 40, 120, 0); // Fade out over time
+    let size = map(particle.age, 0, 50, 15, 7); // Shrink over time
+    
+    // Only draw if still visible
+    if (alpha > 0) {
+      // Outer glow
+      fill(red(trailColor), green(trailColor), blue(trailColor), alpha * 0.3);
+      ellipse(particle.x, particle.y, size * 1.5);
+      
+      // Inner bright core
+      fill(red(trailColor), green(trailColor), blue(trailColor), alpha);
+      ellipse(particle.x, particle.y, size);
+    }
   }
 }
 
@@ -142,10 +194,10 @@ function drawSpaceship(x, y, size, shipColor) {
   
   // Cockpit/center
   fill(255, 255, 255, 150);
-  ellipse(0, -size * 0.1, size * 0.3, size * 0.4);
+  ellipse(0, -size * 0, size * 0.3, size * 0.4);
   
   // Engine glow (only for player moving up)
-  if (y > height - 100) { // Assuming this is the player
+  if (y > height - 100) { 
     fill(100, 200, 255, 100);
     ellipse(0, size * 0.4, size * 0.4, size * 0.2);
   }
@@ -166,6 +218,10 @@ function resetGame() {
   bgColor = color(10, 10, 30);
   gameOver = false;
   starOffset = 0;
+  
+  // Clear trails
+  playerTrail = [];
+  enemyTrail = [];
   
   // Regenerate stars
   createStars();
