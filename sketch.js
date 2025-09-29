@@ -3,6 +3,7 @@ let playerX, playerY, playerSize;
 let speed = 8;
 let bgColor;
 let gameOver = false;
+let gameStarted = false; // Add game state variable
 let stars = [];
 let starOffset = 0;
 let playerTrail = []; // Array to store player trail positions
@@ -22,6 +23,7 @@ function setup() {
   eSpeed = 5;
   bgColor = color(10, 10, 30);
   gameOver = false;
+  gameStarted = false; // Game hasn't started yet
   starOffset = 0;
   
   // Initialize trails
@@ -45,6 +47,12 @@ function draw() {
   noFill();
   rect(0, 0, width, height);
   noStroke();
+
+  if (!gameStarted) {
+    // Show start screen
+    drawStartScreen();
+    return; // Exit draw function early
+  }
 
   if (!gameOver) {
     // Update game state only if game is running
@@ -122,6 +130,38 @@ function draw() {
     text('Use arrow keys to move', 10, 50);
     text('Press SPACE to reset', 10, 70);
   }
+}
+
+function drawStartScreen() {
+  // Draw title and instructions
+  textAlign(CENTER, CENTER);
+  
+  // Game title
+  textSize(32);
+  fill(100, 150, 255);
+  stroke(0);
+  strokeWeight(2);
+  text('SPACE', width / 2, height / 2 - 60);
+  
+  // Instructions
+  textSize(18);
+  fill(255, 255, 255);
+  text('Avoid the red ships!', width / 2, height / 2 - 20);
+  
+  textSize(16);
+  fill(200, 200, 255);
+  text('Use arrow keys to move', width / 2, height / 2 + 10);
+  
+  // Start prompt
+  textSize(20);
+  fill(255, 255, 100);
+  text('PRESS SPACE TO START', width / 2, height / 2 + 50);
+  
+  noStroke();
+  textAlign(LEFT, BASELINE); // Reset alignment
+  
+  // Draw static player ship as preview
+  drawSpaceship(width / 2, height / 2 + 100, playerSize, color(100, 150, 255));
 }
 
 function updateTrail(trail, x, y) {
@@ -217,6 +257,7 @@ function resetGame() {
   eSpeed = 5;
   bgColor = color(10, 10, 30);
   gameOver = false;
+  gameStarted = true; // Start the game
   starOffset = 0;
   
   // Clear trails
@@ -229,6 +270,13 @@ function resetGame() {
 
 function keyPressed() {
   if (key === ' ') { // Spacebar
-    resetGame();
+    if (!gameStarted) {
+      // Start the game for the first time
+      gameStarted = true;
+      resetGame();
+    } else {
+      // Reset/restart the game
+      resetGame();
+    }
   }
 }
